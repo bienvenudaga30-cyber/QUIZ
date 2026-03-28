@@ -1,14 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Zap, Loader2 } from 'lucide-react'
+import { Zap, Loader2, LogOut } from 'lucide-react'
 
 interface AdminSetupProps {
   onRoomCreated: (id: string, code: string) => void
 }
 
 export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -30,19 +33,31 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
     }
   }
 
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth')
+    router.refresh()
+  }
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground">Nouvelle session</h2>
+              <p className="text-sm text-muted-foreground">
+                Crée une salle et partage le code aux joueurs
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold text-foreground">Nouvelle session</h2>
-            <p className="text-sm text-muted-foreground">
-              Crée une salle et partage le code aux joueurs
-            </p>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
 
         {error && (
