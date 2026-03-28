@@ -2,66 +2,27 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Copy, Check, Sparkles, ClipboardPaste } from 'lucide-react'
+import { Zap, Loader2 } from 'lucide-react'
 
-const PROMPT_TEMPLATE = `Génère 10 questions QCM en JSON pour un quiz. 
-Réponds UNIQUEMENT avec ce JSON, sans texte autour :
-
-{
-  "questions": [
-    {
-      "text": "Question ici ?",
-      "option_a": "Réponse A",
-      "option_b": "Réponse B",
-      "option_c": "Réponse C",
-      "option_d": "Réponse D",
-      "correct_opt": "A",
-      "timer_sec": 30,
-      "points": 1000,
-      "category": "général",
-      "difficulty": 2
-    }
-  ]
+interface AdminSetupProps {
+  onRoomCreated: (id: string, code: string) => void
 }
 
-Sujet : [ÉCRIS TON SUJET ICI]`
-
-interface AIImportProps {
-  roomId: string
-  onImported: () => void
-}
-
-export default function AIImport({ roomId, onImported }: AIImportProps) {
-  const [copied, setCopied] = useState(false)
-  const [jsonPasted, setJsonPasted] = useState('')
+export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
-  const copyPrompt = () => {
-    navigator.clipboard.writeText(PROMPT_TEMPLATE)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleImport = async () => {
-    if (!jsonPasted.trim()) return
+  const handleCreateRoom = async () => {
     setLoading(true)
     setError('')
-    setSuccess('')
 
     try {
-      const res = await fetch('/api/admin/generate-ai', {
+      const res = await fetch('/api/admin/create-room', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, jsonText: jsonPasted }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setSuccess(`✅ ${data.count} questions importées !`)
-      setJsonPasted('')
-      onImported()
+      if (!res.ok) throw new Error(data.error || 'Failed to create room')
+      onRoomCreated(data.id, data.code)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -70,61 +31,45 @@ export default function AIImport({ roomId, onImported }: AIImportProps) {
   }
 
   return (
-    <div className="space-y-4 p-4 rounded-xl border border-border bg-card">
-
-      {/* ÉTAPE 1 */}
-      <div>
-        <p className="text-sm font-semibold text-foreground mb-2">
-          Étape 1 — Copie ce prompt
-        </p>
-        <div className="bg-muted rounded-lg p-3 text-xs text-muted-foreground font-mono whitespace-pre-wrap mb-2 max-h-40 overflow-y-auto">
-          {PROMPT_TEMPLATE}
+    <div className="space-y-6">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Zap className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-foreground">Nouvelle session</h2>
+            <p className="text-sm text-muted-foreground">
+              Crée une salle et partage le code aux joueurs
+            </p>
+          </div>
         </div>
-        <Button onClick={copyPrompt} variant="outline" size="sm" className="w-full">
-          {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-          {copied ? 'Copié !' : 'Copier le prompt'}
+
+        {error && (
+          <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
+            {error}
+          </p>
+        )}
+
+        <Button
+          onClick={handleCreateRoom}
+          disabled={loading}
+          className="w-full"
+          size="lg"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Création en cours...
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4 mr-2" />
+              Créer une salle
+            </>
+          )}
         </Button>
       </div>
-
-      {/* ÉTAPE 2 */}
-      <div>
-        <p className="text-sm font-semibold text-foreground mb-1">
-          Étape 2 — Colle-le dans ChatGPT, modifie le sujet, puis copie le JSON reçu
-        </p>
-
-        href="https://chat.openai.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-xs text-primary underline"
-        >
-        Ouvrir ChatGPT →
-      </a>
     </div>
-
-      {/* ÉTAPE 3 */ }
-  <div>
-    <p className="text-sm font-semibold text-foreground mb-2">
-      Étape 3 — Colle le résultat JSON ici
-    </p>
-    <Textarea
-      placeholder={'{\n  "questions": [...]\n}'}
-      value={jsonPasted}
-      onChange={(e) => setJsonPasted(e.target.value)}
-      className="font-mono text-xs min-h-32"
-    />
-  </div>
-
-  { error && <p className="text-sm text-destructive">{error}</p> }
-  { success && <p className="text-sm text-green-500">{success}</p> }
-
-  <Button
-    onClick={handleImport}
-    disabled={loading || !jsonPasted.trim()}
-    className="w-full"
-  >
-    <ClipboardPaste className="w-4 h-4 mr-2" />
-    {loading ? 'Importation...' : 'Importer les questions'}
-  </Button>
-    </div >
   )
 }
