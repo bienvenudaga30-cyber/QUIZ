@@ -4,9 +4,6 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { addQuestions } from '@/lib/db'
 import { Question } from '@/lib/types'
 
 interface QuestionsListProps {

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { createRoom, addQuestions } from '@/lib/db'
 import { Question } from '@/lib/types'
 
 interface AdminSetupProps {
@@ -21,12 +20,29 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
     setError('')
 
     try {
-      const room = await createRoom()
+      // Create room via API
+      const roomRes = await fetch('/api/admin/create-room', {
+        method: 'POST',
+      })
+      
+      if (!roomRes.ok) {
+        throw new Error('Failed to create room')
+      }
+      
+      const room = await roomRes.json()
 
       if (questionsText.trim()) {
         const questions = parseQuestions(questionsText)
         if (questions.length > 0) {
-          await addQuestions(room.id, questions)
+          const questionsRes = await fetch('/api/admin/add-question', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId: room.id, questions }),
+          })
+          
+          if (!questionsRes.ok) {
+            throw new Error('Failed to add questions')
+          }
         }
       }
 
@@ -64,16 +80,16 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
   }
 
   return (
-    <Card className="p-8 bg-white space-y-6">
+    <Card className="p-8 bg-card space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create New Quiz Room</h2>
-        <p className="text-gray-600">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Create New Quiz Room</h2>
+        <p className="text-muted-foreground">
           Enter questions below (optional). Format: Question | OptionA | OptionB | OptionC | OptionD | CorrectAnswer (A/B/C/D)
         </p>
       </div>
 
       <div>
-        <label htmlFor="questions" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="questions" className="block text-sm font-medium text-foreground mb-2">
           Questions (one per block, separated by blank lines)
         </label>
         <Textarea
@@ -97,12 +113,12 @@ B"
         />
       </div>
 
-      {error && <div className="p-4 bg-red-50 border border-red-200 rounded text-red-800">{error}</div>}
+      {error && <div className="p-4 bg-destructive/10 border border-destructive/20 rounded text-destructive">{error}</div>}
 
       <Button
         onClick={handleCreateRoom}
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
+        className="w-full text-lg py-6"
       >
         {loading ? 'Creating Room...' : 'Create Quiz Room'}
       </Button>

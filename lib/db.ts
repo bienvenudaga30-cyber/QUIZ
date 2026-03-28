@@ -1,11 +1,10 @@
-import { createClient } from '@/lib/supabase/client'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { Room, Question, Player, Answer, CurrentQuestion } from './types'
 
 // Room operations
 export async function createRoom() {
   const code = generateRoomCode()
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('rooms')
@@ -18,7 +17,7 @@ export async function createRoom() {
 }
 
 export async function getRoomByCode(code: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('rooms')
@@ -31,7 +30,7 @@ export async function getRoomByCode(code: string) {
 }
 
 export async function getRoomById(id: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('rooms')
@@ -44,7 +43,7 @@ export async function getRoomById(id: string) {
 }
 
 export async function updateRoomStatus(id: string, status: Room['status']) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('rooms')
@@ -59,7 +58,7 @@ export async function updateRoomStatus(id: string, status: Room['status']) {
 
 // Question operations
 export async function addQuestions(roomId: string, questions: Omit<Question, 'id' | 'room_id' | 'created_at'>[]) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const questionsWithRoom = questions.map((q, index) => ({
     ...q,
@@ -77,7 +76,7 @@ export async function addQuestions(roomId: string, questions: Omit<Question, 'id
 }
 
 export async function getQuestions(roomId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('questions')
@@ -90,7 +89,7 @@ export async function getQuestions(roomId: string) {
 }
 
 export async function getQuestionById(id: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('questions')
@@ -104,7 +103,7 @@ export async function getQuestionById(id: string) {
 
 // Current question operations
 export async function initializeCurrentQuestion(roomId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('current_question')
@@ -117,7 +116,7 @@ export async function initializeCurrentQuestion(roomId: string) {
 }
 
 export async function getCurrentQuestion(roomId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('current_question')
@@ -135,7 +134,7 @@ export async function updateCurrentQuestion(
   isActive: boolean,
   timerDuration: number = 30
 ) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const timerStart = isActive ? new Date().toISOString() : null
 
@@ -158,7 +157,7 @@ export async function updateCurrentQuestion(
 
 // Player operations
 export async function joinGame(roomId: string, pseudo: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('players')
@@ -171,7 +170,7 @@ export async function joinGame(roomId: string, pseudo: string) {
 }
 
 export async function getPlayers(roomId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('players')
@@ -183,8 +182,21 @@ export async function getPlayers(roomId: string) {
   return data as Player[]
 }
 
+export async function getPlayerById(playerId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('players')
+    .select('*')
+    .eq('id', playerId)
+    .single()
+
+  if (error) throw error
+  return data as Player
+}
+
 export async function updatePlayerScore(playerId: string, score: number) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('players')
@@ -203,7 +215,7 @@ export async function submitAnswer(
   questionId: string,
   selectedOption: 'A' | 'B' | 'C' | 'D'
 ) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const question = await getQuestionById(questionId)
   const isCorrect = selectedOption === question.correct_option
@@ -228,7 +240,7 @@ export async function submitAnswer(
 }
 
 export async function getAnswers(roomId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('answers')
@@ -240,7 +252,7 @@ export async function getAnswers(roomId: string) {
 }
 
 export async function getAnswersForQuestion(questionId: string) {
-  const supabase = createServerClient()
+  const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('answers')
@@ -249,6 +261,18 @@ export async function getAnswersForQuestion(questionId: string) {
 
   if (error) throw error
   return data as Answer[]
+}
+
+export async function getAnsweredQuestions(playerId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('answers')
+    .select('question_id')
+    .eq('player_id', playerId)
+
+  if (error) throw error
+  return data.map((a) => a.question_id)
 }
 
 // Utility

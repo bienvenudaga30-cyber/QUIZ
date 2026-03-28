@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { getQuestions, updateRoomStatus, updateCurrentQuestion, getCurrentQuestion } from '@/lib/db'
 
 interface GameControlProps {
   roomId: string
