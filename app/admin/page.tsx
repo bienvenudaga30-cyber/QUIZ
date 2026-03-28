@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import AdminSetup from '@/components/admin/AdminSetup'
 import QuestionsList from '@/components/admin/QuestionsList'
 import GameControl from '@/components/admin/GameControl'
+import AIImport from '@/components/admin/AIImport'
 import { Zap, ArrowLeft, Plus, Copy, Check } from 'lucide-react'
 
 export default function AdminPage() {
@@ -73,9 +74,9 @@ export default function AdminPage() {
               <Zap className="w-6 h-6 text-primary" />
               <span className="text-xl font-bold tracking-wider text-foreground">ARENA LIVE</span>
             </div>
-            
+
             <div className="h-6 w-px bg-border" />
-            
+
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground uppercase tracking-wider">Session ID</span>
               <button
@@ -92,10 +93,10 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleBack} 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
             className="border-border text-muted-foreground hover:text-foreground hover:border-primary"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -107,7 +108,10 @@ export default function AdminPage() {
       <main className="max-w-6xl mx-auto p-6">
         <div className="grid lg:grid-cols-2 gap-6">
           <GameControl roomId={roomId} />
-          <QuestionsList roomId={roomId} />
+          <div>
+            <QuestionsList roomId={roomId} />
+            <AIImport roomId={roomId} onImported={() => window.location.reload()} />
+          </div>
         </div>
       </main>
     </div>

@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { generateQuestionsFromPrompt } from "@/lib/ai-questions";
 
 export async function POST(req: NextRequest) {
-  const { roomId, prompt, count = 10 } = await req.json();
+  const { roomId, jsonText } = await req.json();
   const supabase = await createClient();
 
-  // Vérifier que c'est un admin
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
-  // Générer les questions avec l'IA
-  const questions = await generateQuestionsFromPrompt(prompt, count);
+  let questions;
+  try {
+    const parsed = JSON.parse(jsonText);
+    questions = parsed.questions ?? parsed;
+  } catch {
+    return NextResponse.json({ error: "JSON invalide" }, { status: 400 });
+  }
 
-  // Insérer dans Supabase avec position auto
   const { data: existing } = await supabase
     .from("questions")
     .select("position")
@@ -24,8 +26,17 @@ export async function POST(req: NextRequest) {
   let nextPos = (existing?.[0]?.position ?? 0) + 1;
 
   const toInsert = questions.map((q: any, i: number) => ({
-    ...q,
     room_id: roomId,
+    text: q.text,
+    option_a: q.option_a,
+    option_b: q.option_b,
+    option_c: q.option_c,
+    option_d: q.option_d,
+    correct_opt: q.correct_opt,
+    timer_sec: q.timer_sec ?? 30,
+    points: q.points ?? 1000,
+    category: q.category ?? null,
+    difficulty: q.difficulty ?? 2,
     position: nextPos + i,
   }));
 
