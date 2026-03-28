@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Zap, Loader2, LogOut } from 'lucide-react'
 
@@ -18,11 +17,8 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
   const handleCreateRoom = async () => {
     setLoading(true)
     setError('')
-
     try {
-      const res = await fetch('/api/admin/create-room', {
-        method: 'POST',
-      })
+      const res = await fetch('/api/admin/create-room', { method: 'POST' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to create room')
       onRoomCreated(data.id, data.code)
@@ -34,8 +30,7 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
   }
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await fetch('/api/auth', { method: 'DELETE' })
     router.push('/auth')
     router.refresh()
   }
@@ -66,22 +61,11 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
           </p>
         )}
 
-        <Button
-          onClick={handleCreateRoom}
-          disabled={loading}
-          className="w-full"
-          size="lg"
-        >
+        <Button onClick={handleCreateRoom} disabled={loading} className="w-full" size="lg">
           {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Création en cours...
-            </>
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Création en cours...</>
           ) : (
-            <>
-              <Zap className="w-4 h-4 mr-2" />
-              Créer une salle
-            </>
+            <><Zap className="w-4 h-4 mr-2" />Créer une salle</>
           )}
         </Button>
       </div>
