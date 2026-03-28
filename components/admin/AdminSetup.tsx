@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Question } from '@/lib/types'
+import { Zap, FileText, AlertCircle } from 'lucide-react'
 
 interface AdminSetupProps {
   onRoomCreated: (roomId: string, roomCode: string) => void
@@ -20,7 +20,6 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
     setError('')
 
     try {
-      // Create room via API
       const roomRes = await fetch('/api/admin/create-room', {
         method: 'POST',
       })
@@ -79,49 +78,81 @@ export default function AdminSetup({ onRoomCreated }: AdminSetupProps) {
     return questions
   }
 
+  const questionCount = questionsText.trim() ? parseQuestions(questionsText).length : 0
+
   return (
-    <Card className="p-8 bg-card space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Create New Quiz Room</h2>
-        <p className="text-muted-foreground">
-          Enter questions below (optional). Format: Question | OptionA | OptionB | OptionC | OptionD | CorrectAnswer (A/B/C/D)
+    <div className="rounded-xl border border-border bg-card p-8 space-y-6">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          <FileText className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-foreground mb-1">Add Questions</h2>
+          <p className="text-sm text-muted-foreground">
+            Paste your questions below. Each question block should be separated by a blank line.
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label htmlFor="questions" className="text-sm font-medium text-foreground">
+            Questions
+          </label>
+          {questionCount > 0 && (
+            <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
+              {questionCount} question{questionCount !== 1 ? 's' : ''} parsed
+            </span>
+          )}
+        </div>
+        <Textarea
+          id="questions"
+          placeholder={`What is the capital of France?
+Paris
+London
+Berlin
+Madrid
+A
+
+What is 2 + 2?
+3
+4
+5
+6
+B`}
+          value={questionsText}
+          onChange={(e) => setQuestionsText(e.target.value)}
+          className="min-h-64 bg-input border-border text-foreground placeholder:text-muted-foreground font-mono text-sm"
+        />
+        <p className="text-xs text-muted-foreground">
+          Format: Question text, then 4 options (A-D), then the correct answer letter (A/B/C/D)
         </p>
       </div>
 
-      <div>
-        <label htmlFor="questions" className="block text-sm font-medium text-foreground mb-2">
-          Questions (one per block, separated by blank lines)
-        </label>
-        <Textarea
-          id="questions"
-          placeholder="Question 1?
-Option A
-Option B
-Option C
-Option D
-A
-
-Question 2?
-Option A
-Option B
-Option C
-Option D
-B"
-          value={questionsText}
-          onChange={(e) => setQuestionsText(e.target.value)}
-          className="min-h-64"
-        />
-      </div>
-
-      {error && <div className="p-4 bg-destructive/10 border border-destructive/20 rounded text-destructive">{error}</div>}
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+          <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       <Button
         onClick={handleCreateRoom}
         disabled={loading}
-        className="w-full text-lg py-6"
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-6 text-lg font-semibold"
       >
-        {loading ? 'Creating Room...' : 'Create Quiz Room'}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+            Creating Arena...
+          </span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Launch Arena
+          </span>
+        )}
       </Button>
-    </Card>
+    </div>
   )
 }

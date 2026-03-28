@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Zap, User, Hash, AlertCircle } from 'lucide-react'
 
 interface JoinGameProps {
   onJoined: (playerId: string, roomId: string, playerName: string) => void
@@ -47,53 +47,68 @@ export default function JoinGame({ onJoined }: JoinGameProps) {
   }
 
   return (
-    <Card className="p-8 bg-white space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Join a Quiz</h2>
-        <p className="text-gray-600">Enter the room code and your name to start playing</p>
-      </div>
+    <div className="rounded-xl border border-border bg-card p-8 space-y-6">
+      <form onSubmit={handleJoin} className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="roomCode" className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
+              <Hash className="w-4 h-4 text-primary" />
+              Session Code
+            </label>
+            <Input
+              id="roomCode"
+              type="text"
+              placeholder="XXXX"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              maxLength={4}
+              className="text-center text-3xl font-mono font-bold tracking-[0.5em] bg-input border-border h-16 text-primary placeholder:text-muted-foreground/50"
+              disabled={loading}
+            />
+          </div>
 
-      <form onSubmit={handleJoin} className="space-y-4">
-        <div>
-          <label htmlFor="roomCode" className="block text-sm font-medium text-gray-700 mb-2">
-            Room Code
-          </label>
-          <Input
-            id="roomCode"
-            type="text"
-            placeholder="XXXX"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            maxLength={4}
-            className="text-center text-2xl font-bold tracking-widest"
-            disabled={loading}
-          />
+          <div>
+            <label htmlFor="playerName" className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
+              <User className="w-4 h-4 text-primary" />
+              Your Nickname
+            </label>
+            <Input
+              id="playerName"
+              type="text"
+              placeholder="Enter your arena name..."
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              className="bg-input border-border h-12"
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-2">
-            Your Name
-          </label>
-          <Input
-            id="playerName"
-            type="text"
-            placeholder="Enter your name"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            disabled={loading}
-          />
-        </div>
-
-        {error && <div className="p-4 bg-red-50 border border-red-200 rounded text-red-800 text-sm">{error}</div>}
+        {error && (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
 
         <Button
           type="submit"
           disabled={loading || !roomCode || !playerName}
-          className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-6 text-lg font-semibold"
         >
-          {loading ? 'Joining...' : 'Join Game'}
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              Joining...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Join Arena
+            </span>
+          )}
         </Button>
       </form>
-    </Card>
+    </div>
   )
 }

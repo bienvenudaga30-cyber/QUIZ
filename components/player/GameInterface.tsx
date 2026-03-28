@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Question, CurrentQuestion, Player } from '@/lib/types'
+import { Question } from '@/lib/types'
+import { Trophy, Clock, Check, X, Send, Loader2 } from 'lucide-react'
 
 interface GameInterfaceProps {
   playerId: string
@@ -89,106 +89,185 @@ export default function GameInterface({ playerId, roomId }: GameInterfaceProps) 
     }
   }
 
+  // Waiting state
   if (!currentQuestion) {
     return (
-      <Card className="p-8 bg-white text-center">
-        <p className="text-gray-600 mb-4">Waiting for the quiz to start...</p>
-        {playerData && (
-          <div className="mt-6 p-4 bg-green-50 rounded border border-green-200">
-            <p className="text-lg font-bold text-gray-900">Score: {playerData.score}</p>
+      <div className="space-y-6">
+        {/* Score Card */}
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-primary" />
+              <span className="text-muted-foreground">Your Score</span>
+            </div>
+            <span className="text-4xl font-bold text-primary">{playerData?.score || 0}</span>
           </div>
-        )}
-      </Card>
+        </div>
+
+        {/* Waiting Message */}
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <div className="w-16 h-16 rounded-full border-4 border-primary/30 border-t-primary animate-spin mx-auto mb-6" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Waiting for Next Round</h2>
+          <p className="text-muted-foreground">The host will start the question soon...</p>
+        </div>
+      </div>
     )
   }
 
+  // Question paused
   if (!currentQuestion.is_active) {
     return (
-      <Card className="p-8 bg-white text-center space-y-4">
-        <p className="text-gray-600">Question paused</p>
-        {playerData && (
-          <div className="p-4 bg-green-50 rounded border border-green-200">
-            <p className="text-lg font-bold text-gray-900">Score: {playerData.score}</p>
+      <div className="space-y-6">
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-primary" />
+              <span className="text-muted-foreground">Your Score</span>
+            </div>
+            <span className="text-4xl font-bold text-primary">{playerData?.score || 0}</span>
           </div>
-        )}
-      </Card>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-12 text-center">
+          <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-lg text-muted-foreground">Round paused</p>
+        </div>
+      </div>
     )
   }
 
+  // Loading question
   if (!question) {
     return (
-      <Card className="p-8 bg-white text-center">
-        <p className="text-gray-600">Loading question...</p>
-      </Card>
+      <div className="rounded-xl border border-border bg-card p-12 text-center">
+        <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+        <p className="text-muted-foreground">Loading question...</p>
+      </div>
     )
   }
 
   const isAnswered = answeredQuestions.some((q: { question_id: string }) => q.question_id === question.id)
 
+  const optionColors = {
+    A: 'from-red-500 to-red-600',
+    B: 'from-blue-500 to-blue-600',
+    C: 'from-yellow-500 to-yellow-600',
+    D: 'from-green-500 to-green-600',
+  }
+
   return (
-    <Card className="p-8 bg-white space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Score: {playerData?.score || 0}</h2>
-        <div className={`text-3xl font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'}`}>
-          {timeLeft}s
+    <div className="space-y-4">
+      {/* Header with Score and Timer */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-primary/30 bg-primary/5">
+          <Trophy className="w-5 h-5 text-primary" />
+          <span className="text-2xl font-bold text-primary">{playerData?.score || 0}</span>
+        </div>
+
+        {/* Circular Timer */}
+        <div className="relative w-20 h-20">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="8"
+              className="text-muted/30"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${(timeLeft / 30) * 283} 283`}
+              className={timeLeft <= 10 ? 'text-destructive' : 'text-primary'}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`text-2xl font-bold ${timeLeft <= 10 ? 'text-destructive' : 'text-foreground'}`}>
+              {timeLeft}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="bg-blue-50 p-6 rounded border border-blue-200">
-        <p className="text-xl font-semibold text-gray-900">{question.text}</p>
+      {/* Question */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <p className="text-xl font-semibold text-foreground leading-relaxed">{question.text}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Options Grid */}
+      <div className="grid grid-cols-2 gap-3">
         {(['A', 'B', 'C', 'D'] as const).map((option) => {
           const optionText = question[`option_${option.toLowerCase()}` as keyof Question]
           const isSelected = selectedOption === option
           const isCorrect = option === question.correct_option
+          const showResult = isAnswered || (hasAnswered && timeLeft === 0)
 
           return (
             <button
               key={option}
               onClick={() => !isAnswered && !hasAnswered && setSelectedOption(option)}
               disabled={isAnswered || hasAnswered || timeLeft === 0}
-              className={`p-4 rounded font-semibold text-white transition ${
-                isAnswered
+              className={`relative p-4 rounded-xl text-white font-semibold transition-all duration-200 min-h-24 flex flex-col items-center justify-center text-center ${
+                showResult
                   ? isCorrect
-                    ? 'bg-green-600'
-                    : selectedOption === option
-                      ? 'bg-red-600'
-                      : 'bg-gray-400'
+                    ? 'bg-gradient-to-br from-green-500 to-green-600 ring-4 ring-green-400/50'
+                    : isSelected
+                      ? 'bg-gradient-to-br from-red-500 to-red-600 ring-4 ring-red-400/50'
+                      : 'bg-gradient-to-br from-gray-600 to-gray-700 opacity-50'
                   : isSelected
-                    ? 'bg-yellow-500'
-                    : 'bg-gray-600 hover:bg-gray-700'
+                    ? `bg-gradient-to-br ${optionColors[option]} ring-4 ring-white/50 scale-[1.02]`
+                    : `bg-gradient-to-br ${optionColors[option]} hover:scale-[1.02] active:scale-[0.98]`
               }`}
             >
-              <div className="text-sm">{option}</div>
-              <div className="text-xs mt-2">{optionText}</div>
+              {showResult && isCorrect && (
+                <div className="absolute top-2 right-2">
+                  <Check className="w-5 h-5" />
+                </div>
+              )}
+              {showResult && isSelected && !isCorrect && (
+                <div className="absolute top-2 right-2">
+                  <X className="w-5 h-5" />
+                </div>
+              )}
+              <span className="text-sm opacity-80 mb-1">{option}</span>
+              <span className="text-sm leading-tight">{optionText}</span>
             </button>
           )
         })}
       </div>
 
+      {/* Submit Button */}
       {!isAnswered && !hasAnswered && (
         <Button
           onClick={handleSubmitAnswer}
           disabled={!selectedOption || timeLeft === 0}
-          className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-6 text-lg font-semibold"
         >
+          <Send className="w-5 h-5 mr-2" />
           Submit Answer
         </Button>
       )}
 
+      {/* Status Messages */}
       {hasAnswered && (
-        <div className="p-4 bg-blue-50 text-center border border-blue-200 rounded">
-          <p className="text-blue-900 font-semibold">Answer submitted!</p>
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+          <Check className="w-6 h-6 text-primary mx-auto mb-2" />
+          <p className="text-primary font-semibold">Answer Submitted!</p>
         </div>
       )}
 
       {isAnswered && !hasAnswered && (
-        <div className="p-4 bg-gray-50 text-center border border-gray-200 rounded">
-          <p className="text-gray-700">You already answered this question</p>
+        <div className="rounded-xl border border-muted bg-muted/20 p-4 text-center">
+          <p className="text-muted-foreground">You already answered this question</p>
         </div>
       )}
-    </Card>
+    </div>
   )
 }

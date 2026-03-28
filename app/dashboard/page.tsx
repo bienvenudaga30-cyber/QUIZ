@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import ScreenDashboard from '@/components/dashboard/ScreenDashboard'
+import { Zap, ArrowLeft, Monitor, Hash } from 'lucide-react'
 
 export default function DashboardPage() {
   const [roomCode, setRoomCode] = useState('')
-  const [roomId, setRoomId] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,58 +20,61 @@ export default function DashboardPage() {
 
   if (!submitted || !roomCode) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="max-w-lg mx-auto flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Zap className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold tracking-wider text-foreground">ARENA LIVE</span>
+            </div>
             <Link href="/">
-              <Button variant="outline" className="text-white border-white hover:bg-white hover:text-purple-600">
-                Back Home
+              <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground hover:border-primary">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </Button>
             </Link>
           </div>
+        </header>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="bg-white rounded-lg shadow-2xl p-8 space-y-6">
-              <div>
-                <label htmlFor="code" className="block text-sm font-medium text-gray-700 mb-2">
-                  Room Code
-                </label>
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="Enter room code"
-                  value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                  maxLength={4}
-                  className="text-center text-2xl font-bold tracking-widest"
-                />
-              </div>
-
-              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white text-lg py-6">
-                Enter Dashboard
-              </Button>
+        <main className="max-w-lg mx-auto p-6">
+          <div className="mb-8 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4">
+              <Monitor className="w-8 h-8 text-secondary" />
             </div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Live Screen</h1>
+            <p className="text-muted-foreground">Display the live quiz dashboard for your audience</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-8 space-y-6">
+            <div>
+              <label htmlFor="code" className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
+                <Hash className="w-4 h-4 text-primary" />
+                Session Code
+              </label>
+              <Input
+                id="code"
+                type="text"
+                placeholder="XXXX"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                maxLength={4}
+                className="text-center text-3xl font-mono font-bold tracking-[0.5em] bg-input border-border h-16 text-primary placeholder:text-muted-foreground/50"
+              />
+            </div>
+
+            <Button type="submit" className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 py-6 text-lg font-semibold">
+              <Monitor className="w-5 h-5 mr-2" />
+              Open Dashboard
+            </Button>
           </form>
-        </div>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold text-white">Quiz Dashboard</h1>
-          <Link href="/">
-            <Button variant="outline" className="text-white border-white hover:bg-white hover:text-gray-900">
-              Back Home
-            </Button>
-          </Link>
-        </div>
-
-        <ScreenDashboard roomCode={roomCode} />
-      </div>
+    <div className="min-h-screen bg-background">
+      <ScreenDashboard roomCode={roomCode} />
     </div>
   )
 }

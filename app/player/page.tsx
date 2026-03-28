@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import JoinGame from '@/components/player/JoinGame'
 import GameInterface from '@/components/player/GameInterface'
+import { Zap, ArrowLeft, LogOut } from 'lucide-react'
 
 export default function PlayerPage() {
   const [playerId, setPlayerId] = useState<string | null>(null)
@@ -25,39 +26,60 @@ export default function PlayerPage() {
 
   if (!playerId || !roomId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-600 to-green-800 p-4">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-white">Join Game</h1>
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border">
+          <div className="max-w-lg mx-auto flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Zap className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold tracking-wider text-foreground">ARENA LIVE</span>
+            </div>
             <Link href="/">
-              <Button variant="outline" className="text-white border-white hover:bg-white hover:text-green-600">
-                Back Home
+              <Button variant="outline" size="sm" className="border-border text-muted-foreground hover:text-foreground hover:border-primary">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </Button>
             </Link>
           </div>
+        </header>
 
+        <main className="max-w-lg mx-auto p-6">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Enter the Arena</h1>
+            <p className="text-muted-foreground">Join a live quiz session and compete</p>
+          </div>
           <JoinGame onJoined={handleJoined} />
-        </div>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-600 to-green-800 p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              Welcome, <span className="text-green-200">{playerName}</span>!
-            </h1>
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border sticky top-0 bg-background/95 backdrop-blur z-10">
+        <div className="max-w-2xl mx-auto flex items-center justify-between p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Zap className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold tracking-wider text-foreground">ARENA LIVE</span>
+            </div>
+            <div className="h-6 w-px bg-border" />
+            <span className="text-primary font-semibold">{playerName}</span>
           </div>
-          <Button variant="outline" onClick={handleLeave} className="text-white border-white hover:bg-white hover:text-green-600">
-            Leave Game
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleLeave}
+            className="border-border text-muted-foreground hover:text-destructive hover:border-destructive"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Leave
           </Button>
         </div>
+      </header>
 
+      <main className="max-w-2xl mx-auto p-4">
         <GameInterface playerId={playerId} roomId={roomId} />
-      </div>
+      </main>
     </div>
   )
 }
